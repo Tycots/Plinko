@@ -1,0 +1,834 @@
+#pragma version 10
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1 8 2
+    bytecblock 0x70526f756e64 0x70416d74 0x686f757365 0x746f74616c42657473 0x746f74616c5061796f7574 0x705269736b 0x6d696e426574 0x6d6178426574 0x686f757365466565427073
+    // contract.py:17
+    // class BettingContract(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@16
+    pushbytes 0x30c6d58a // method "opt_in()void"
+    txna ApplicationArgs 0
+    match main_opt_in_route@5
+
+main_switch_case_next@6:
+    // contract.py:17
+    // class BettingContract(ARC4Contract):
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    assert
+    pushbytess 0x752c3ac0 0xcabf4f15 0xa384996e 0x8e3f1c7c 0x21f1ddff // method "create_application()void", method "submit_bet(pay,uint64)void", method "settle_bet()void", method "refund_bet(address)void", method "withdraw(uint64)void"
+    txna ApplicationArgs 0
+    match create_application submit_bet settle_bet refund_bet withdraw
+    err
+
+main_opt_in_route@5:
+    // contract.py:39
+    // @arc4.abimethod(allow_actions=["OptIn"])
+    txn OnCompletion
+    intc_1 // OptIn
+    ==
+    txn ApplicationID
+    &&
+    assert
+    b opt_in
+
+main___algopy_default_create@16:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// contract.BettingContract.create_application[routing]() -> void:
+create_application:
+    // contract.py:32
+    // self.house.value = Account("6VUNCQFJRBVIEVHUSNXELX7NJPYTQJ2FUAYXD6DSPX3BK2A57X4JCYXEH4")
+    bytec_2 // 0x686f757365
+    pushbytes base32(6VUNCQFJRBVIEVHUSNXELX7NJPYTQJ2FUAYXD6DSPX3BK2A57X4A) // addr 6VUNCQFJRBVIEVHUSNXELX7NJPYTQJ2FUAYXD6DSPX3BK2A57X4JCYXEH4
+    app_global_put
+    // contract.py:33
+    // self.total_bets.value = UInt64(0)
+    bytec_3 // 0x746f74616c42657473
+    intc_0 // 0
+    app_global_put
+    // contract.py:34
+    // self.total_payout.value = UInt64(0)
+    bytec 4 // 0x746f74616c5061796f7574
+    intc_0 // 0
+    app_global_put
+    // contract.py:35
+    // self.min_bet.value = UInt64(100_000)
+    bytec 6 // 0x6d696e426574
+    pushint 100000
+    app_global_put
+    // contract.py:36
+    // self.max_bet.value = UInt64(100_000_000)
+    bytec 7 // 0x6d6178426574
+    pushint 100000000
+    app_global_put
+    // contract.py:37
+    // self.house_fee_bps.value = UInt64(300)
+    bytec 8 // 0x686f757365466565427073
+    pushint 300
+    app_global_put
+    // contract.py:30
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// contract.BettingContract.opt_in[routing]() -> void:
+opt_in:
+    // contract.py:41
+    // self.pending_bet_round[Txn.sender] = UInt64(0)
+    txn Sender
+    bytec_0 // 0x70526f756e64
+    intc_0 // 0
+    app_local_put
+    // contract.py:42
+    // self.pending_bet_amount[Txn.sender] = UInt64(0)
+    txn Sender
+    bytec_1 // 0x70416d74
+    intc_0 // 0
+    app_local_put
+    // contract.py:43
+    // self.pending_risk[Txn.sender] = UInt64(0)
+    txn Sender
+    bytec 5 // 0x705269736b
+    intc_0 // 0
+    app_local_put
+    // contract.py:39
+    // @arc4.abimethod(allow_actions=["OptIn"])
+    intc_1 // 1
+    return
+
+
+// contract.BettingContract.submit_bet[routing]() -> void:
+submit_bet:
+    // contract.py:45
+    // @arc4.abimethod
+    txn GroupIndex
+    intc_1 // 1
+    -
+    dup
+    gtxns TypeEnum
+    intc_1 // pay
+    ==
+    assert // transaction type is pay
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // contract.py:47
+    // assert pay.receiver == Global.current_application_address, "Wrong receiver"
+    dig 1
+    gtxns Receiver
+    global CurrentApplicationAddress
+    ==
+    assert // Wrong receiver
+    // contract.py:48
+    // assert self.pending_bet_round[Txn.sender] == 0, "Already have a bet pending"
+    txn Sender
+    intc_0 // 0
+    bytec_0 // 0x70526f756e64
+    app_local_get_ex
+    assert // check self.pending_bet_round exists for account
+    !
+    assert // Already have a bet pending
+    // contract.py:49
+    // assert pay.amount >= self.min_bet.value, "Bet below minimum"
+    swap
+    gtxns Amount
+    intc_0 // 0
+    bytec 6 // 0x6d696e426574
+    app_global_get_ex
+    assert // check self.min_bet exists
+    dig 1
+    <=
+    assert // Bet below minimum
+    // contract.py:50
+    // assert pay.amount <= self.max_bet.value, "Bet exceeds maximum"
+    intc_0 // 0
+    bytec 7 // 0x6d6178426574
+    app_global_get_ex
+    assert // check self.max_bet exists
+    dig 1
+    >=
+    assert // Bet exceeds maximum
+    // contract.py:51
+    // assert risk_level <= UInt64(2), "Invalid risk level"
+    dig 1
+    intc_3 // 2
+    <=
+    assert // Invalid risk level
+    // contract.py:53
+    // self.pending_bet_round[Txn.sender] = Global.round + 1
+    global Round
+    intc_1 // 1
+    +
+    txn Sender
+    bytec_0 // 0x70526f756e64
+    uncover 2
+    app_local_put
+    // contract.py:54
+    // self.pending_bet_amount[Txn.sender] = pay.amount
+    txn Sender
+    bytec_1 // 0x70416d74
+    uncover 2
+    app_local_put
+    // contract.py:55
+    // self.pending_risk[Txn.sender] = risk_level
+    txn Sender
+    bytec 5 // 0x705269736b
+    uncover 2
+    app_local_put
+    // contract.py:45
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+
+// contract.BettingContract.settle_bet[routing]() -> void:
+settle_bet:
+    pushbytes ""
+    dupn 3
+    // contract.py:59
+    // target_round = self.pending_bet_round[Txn.sender]
+    txn Sender
+    intc_0 // 0
+    bytec_0 // 0x70526f756e64
+    app_local_get_ex
+    assert // check self.pending_bet_round exists for account
+    // contract.py:60
+    // bet_amount = self.pending_bet_amount[Txn.sender]
+    txn Sender
+    intc_0 // 0
+    bytec_1 // 0x70416d74
+    app_local_get_ex
+    swap
+    cover 2
+    assert // check self.pending_bet_amount exists for account
+    // contract.py:62
+    // assert target_round > 0, "No bet pending"
+    dup
+    assert // No bet pending
+    // contract.py:63
+    // assert Global.round > target_round, "Wait for next block"
+    global Round
+    dig 1
+    >
+    assert // Wait for next block
+    // contract.py:65
+    // block_seed = op.Block.blk_seed(target_round)
+    block BlkSeed
+    // contract.py:66
+    // seed = op.sha256(block_seed + Txn.sender.bytes)
+    txn Sender
+    concat
+    sha256
+    intc_0 // 0
+    // contract.py:70
+    // bucket_index = op.btoi(op.extract(seed, 0, 8)) % num_buckets
+    extract_uint64
+    // contract.py:68-69
+    // # 16 rows means 17 buckets (indices 0 to 16)
+    // num_buckets = UInt64(17)
+    pushint 17
+    // contract.py:70
+    // bucket_index = op.btoi(op.extract(seed, 0, 8)) % num_buckets
+    %
+    dup
+    // contract.py:72
+    // half = num_buckets // 2
+    intc_2 // 8
+    // contract.py:74
+    // if bucket_index > half:
+    >
+    bnz settle_bet_if_body@2
+    bury 3
+
+settle_bet_after_if_else@3:
+    // contract.py:77
+    // risk = self.pending_risk[Txn.sender]
+    txn Sender
+    intc_0 // 0
+    bytec 5 // 0x705269736b
+    app_local_get_ex
+    swap
+    dup
+    cover 2
+    bury 4
+    assert // check self.pending_risk exists for account
+    // contract.py:80
+    // if risk == UInt64(0):
+    bnz settle_bet_else_body@5
+    // contract.py:118
+    // if pos == UInt64(0):
+    dig 2
+    bnz settle_bet_after_if_else@54
+    // contract.py:119
+    // return UInt64(108)
+    pushint 108
+
+settle_bet_after_if_else@9:
+    // contract.py:87
+    // house_fee = (bet_amount * self.house_fee_bps.value) // 10_000
+    intc_0 // 0
+    bytec 8 // 0x686f757365466565427073
+    app_global_get_ex
+    assert // check self.house_fee_bps exists
+    dig 2
+    dup
+    uncover 2
+    *
+    pushint 10000
+    /
+    dup
+    bury 7
+    // contract.py:88
+    // final_payout = ((bet_amount - house_fee) * multiplier) // 100
+    swap
+    dig 1
+    -
+    uncover 2
+    *
+    pushint 100
+    /
+    bury 6
+    // contract.py:90
+    // if house_fee > 0:
+    bz settle_bet_after_if_else@12
+    // contract.py:91
+    // itxn.Payment(receiver=self.house.value, amount=house_fee).submit()
+    itxn_begin
+    intc_0 // 0
+    bytec_2 // 0x686f757365
+    app_global_get_ex
+    assert // check self.house exists
+    dig 4
+    itxn_field Amount
+    itxn_field Receiver
+    intc_1 // pay
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+
+settle_bet_after_if_else@12:
+    // contract.py:93
+    // if final_payout > 0:
+    dig 4
+    bz settle_bet_after_if_else@15
+    // contract.py:94
+    // itxn.Payment(receiver=Txn.sender, amount=final_payout).submit()
+    itxn_begin
+    txn Sender
+    dig 5
+    itxn_field Amount
+    itxn_field Receiver
+    intc_1 // pay
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+
+settle_bet_after_if_else@15:
+    // contract.py:96
+    // self.total_bets.value += 1
+    intc_0 // 0
+    bytec_3 // 0x746f74616c42657473
+    app_global_get_ex
+    assert // check self.total_bets exists
+    intc_1 // 1
+    +
+    bytec_3 // 0x746f74616c42657473
+    swap
+    app_global_put
+    // contract.py:97
+    // self.total_payout.value += final_payout
+    intc_0 // 0
+    bytec 4 // 0x746f74616c5061796f7574
+    app_global_get_ex
+    assert // check self.total_payout exists
+    dig 5
+    +
+    bytec 4 // 0x746f74616c5061796f7574
+    swap
+    app_global_put
+    // contract.py:98
+    // self.pending_bet_round[Txn.sender] = UInt64(0)
+    txn Sender
+    bytec_0 // 0x70526f756e64
+    intc_0 // 0
+    app_local_put
+    // contract.py:99
+    // self.pending_bet_amount[Txn.sender] = UInt64(0)
+    txn Sender
+    bytec_1 // 0x70416d74
+    intc_0 // 0
+    app_local_put
+    // contract.py:57
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+settle_bet_after_if_else@54:
+    // contract.py:120
+    // if pos == UInt64(1):
+    dig 2
+    intc_1 // 1
+    ==
+    bz settle_bet_after_if_else@56
+    // contract.py:121
+    // return UInt64(102)
+    pushint 102
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@56:
+    // contract.py:122
+    // if pos == UInt64(2):
+    dig 2
+    intc_3 // 2
+    ==
+    bz settle_bet_after_if_else@58
+    // contract.py:123
+    // return UInt64(98)
+    pushint 98
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@58:
+    // contract.py:124
+    // if pos == UInt64(3):
+    dig 2
+    pushint 3
+    ==
+    bz settle_bet_after_if_else@60
+    // contract.py:125
+    // return UInt64(96)
+    pushint 96
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@60:
+    // contract.py:126
+    // if pos == UInt64(4):
+    dig 2
+    pushint 4
+    ==
+    bz settle_bet_after_if_else@62
+    // contract.py:127
+    // return UInt64(94)
+    pushint 94
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@62:
+    // contract.py:128
+    // if pos == UInt64(5):
+    dig 2
+    pushint 5
+    ==
+    bz settle_bet_after_if_else@64
+    // contract.py:129
+    // return UInt64(92)
+    pushint 92
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@64:
+    // contract.py:130
+    // if pos == UInt64(6):
+    dig 2
+    pushint 6
+    ==
+    bz settle_bet_after_if_else@66
+    // contract.py:131
+    // return UInt64(90)
+    pushint 90
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@66:
+    // contract.py:132
+    // if pos == UInt64(7):
+    dig 2
+    pushint 7
+    ==
+    bz settle_bet_after_if_else@68
+    // contract.py:133
+    // return UInt64(88)
+    pushint 88
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@68:
+    // contract.py:134
+    // return UInt64(88)
+    pushint 88
+    // contract.py:81
+    // multiplier = _get_low_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_else_body@5:
+    // contract.py:82
+    // elif risk == UInt64(1):
+    dig 1
+    intc_1 // 1
+    ==
+    bz settle_bet_else_body@7
+    // contract.py:139
+    // if pos == UInt64(0):
+    dig 2
+    bnz settle_bet_after_if_else@36
+    // contract.py:140
+    // return UInt64(255)
+    pushint 255
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@36:
+    // contract.py:141
+    // if pos == UInt64(1):
+    dig 2
+    intc_1 // 1
+    ==
+    bz settle_bet_after_if_else@38
+    // contract.py:142
+    // return UInt64(158)
+    pushint 158
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@38:
+    // contract.py:143
+    // if pos == UInt64(2):
+    dig 2
+    intc_3 // 2
+    ==
+    bz settle_bet_after_if_else@40
+    // contract.py:144
+    // return UInt64(105)
+    pushint 105
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@40:
+    // contract.py:145
+    // if pos == UInt64(3):
+    dig 2
+    pushint 3
+    ==
+    bz settle_bet_after_if_else@42
+    // contract.py:146
+    // return UInt64(78)
+    pushint 78
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@42:
+    // contract.py:147
+    // if pos == UInt64(4):
+    dig 2
+    pushint 4
+    ==
+    bz settle_bet_after_if_else@44
+    // contract.py:148
+    // return UInt64(58)
+    pushint 58
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@44:
+    // contract.py:149
+    // if pos == UInt64(5):
+    dig 2
+    pushint 5
+    ==
+    bz settle_bet_after_if_else@46
+    // contract.py:150
+    // return UInt64(48)
+    pushint 48
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@46:
+    // contract.py:151
+    // if pos == UInt64(6):
+    dig 2
+    pushint 6
+    ==
+    bz settle_bet_after_if_else@48
+    // contract.py:152
+    // return UInt64(38)
+    pushint 38
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@48:
+    // contract.py:153
+    // if pos == UInt64(7):
+    dig 2
+    pushint 7
+    ==
+    bz settle_bet_after_if_else@50
+    // contract.py:154
+    // return UInt64(32)
+    pushint 32
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@50:
+    // contract.py:155
+    // return UInt64(28)
+    pushint 28
+    // contract.py:83
+    // multiplier = _get_mid_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_else_body@7:
+    // contract.py:160
+    // if pos == UInt64(0):
+    dig 2
+    bnz settle_bet_after_if_else@18
+    // contract.py:161
+    // return UInt64(435)
+    pushint 435
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@18:
+    // contract.py:162
+    // if pos == UInt64(1):
+    dig 2
+    intc_1 // 1
+    ==
+    bz settle_bet_after_if_else@20
+    // contract.py:163
+    // return UInt64(245)
+    pushint 245
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@20:
+    // contract.py:164
+    // if pos == UInt64(2):
+    dig 2
+    intc_3 // 2
+    ==
+    bz settle_bet_after_if_else@22
+    // contract.py:165
+    // return UInt64(105)
+    pushint 105
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@22:
+    // contract.py:166
+    // if pos == UInt64(3):
+    dig 2
+    pushint 3
+    ==
+    bz settle_bet_after_if_else@24
+    // contract.py:167
+    // return UInt64(55)
+    pushint 55
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@24:
+    // contract.py:168
+    // if pos == UInt64(4):
+    dig 2
+    pushint 4
+    ==
+    bz settle_bet_after_if_else@26
+    // contract.py:169
+    // return UInt64(32)
+    pushint 32
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@26:
+    // contract.py:170
+    // if pos == UInt64(5):
+    dig 2
+    pushint 5
+    ==
+    bz settle_bet_after_if_else@28
+    // contract.py:171
+    // return UInt64(18)
+    pushint 18
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@28:
+    // contract.py:172
+    // if pos == UInt64(6):
+    dig 2
+    pushint 6
+    ==
+    bz settle_bet_after_if_else@30
+    // contract.py:173
+    // return UInt64(12)
+    pushint 12
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@30:
+    // contract.py:174
+    // if pos == UInt64(7):
+    dig 2
+    pushint 7
+    ==
+    bz settle_bet_after_if_else@32
+    // contract.py:175
+    // return UInt64(8)
+    intc_2 // 8
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_after_if_else@32:
+    // contract.py:176
+    // return UInt64(5)
+    pushint 5
+    // contract.py:85
+    // multiplier = _get_high_risk(pos)
+    b settle_bet_after_if_else@9
+
+settle_bet_if_body@2:
+    // contract.py:75
+    // pos = UInt64(16) - bucket_index
+    pushint 16
+    swap
+    -
+    bury 3
+    b settle_bet_after_if_else@3
+
+
+// contract.BettingContract.refund_bet[routing]() -> void:
+refund_bet:
+    // contract.py:101
+    // @arc4.abimethod
+    txna ApplicationArgs 1
+    dup
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // contract.py:103
+    // target_round = self.pending_bet_round[player]
+    dup
+    intc_0 // 0
+    bytec_0 // 0x70526f756e64
+    app_local_get_ex
+    assert // check self.pending_bet_round exists for account
+    // contract.py:104
+    // amount = self.pending_bet_amount[player]
+    dig 1
+    intc_0 // 0
+    bytec_1 // 0x70416d74
+    app_local_get_ex
+    assert // check self.pending_bet_amount exists for account
+    // contract.py:105
+    // assert target_round > 0, "No bet"
+    swap
+    assert // No bet
+    // contract.py:106
+    // itxn.Payment(receiver=player, amount=amount).submit()
+    itxn_begin
+    itxn_field Amount
+    dup
+    itxn_field Receiver
+    intc_1 // pay
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+    // contract.py:107
+    // self.pending_bet_round[player] = UInt64(0)
+    dup
+    bytec_0 // 0x70526f756e64
+    intc_0 // 0
+    app_local_put
+    // contract.py:108
+    // self.pending_bet_amount[player] = UInt64(0)
+    bytec_1 // 0x70416d74
+    intc_0 // 0
+    app_local_put
+    // contract.py:101
+    // @arc4.abimethod
+    intc_1 // 1
+    return
+
+
+// contract.BettingContract.withdraw[routing]() -> void:
+withdraw:
+    // contract.py:110
+    // @arc4.abimethod
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // contract.py:112
+    // assert Txn.sender == self.house.value, "Not house"
+    txn Sender
+    intc_0 // 0
+    bytec_2 // 0x686f757365
+    app_global_get_ex
+    assert // check self.house exists
+    swap
+    dig 1
+    ==
+    assert // Not house
+    // contract.py:113
+    // itxn.Payment(receiver=self.house.value, amount=amount).submit()
+    itxn_begin
+    itxn_field Receiver
+    itxn_field Amount
+    intc_1 // pay
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+    // contract.py:110
+    // @arc4.abimethod
+    intc_1 // 1
+    return
