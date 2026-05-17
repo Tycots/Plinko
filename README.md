@@ -60,11 +60,11 @@ The player receives their payout automatically.
 
 | Risk Level | Max Multiplier | Feel                  | Recommended For          |
 |------------|----------------|-----------------------|--------------------------|
-| Low (0)    | 1.08x          | Very safe             | Grinding                 |
-| Mid (1)    | 2.55x          | Balanced              | Most players             |
-| High (2)   | 4.35x          | Exciting              | High rollers             |
+| Low (0)    | 1.5x          | Very safe             | Grinding                 |
+| Mid (1)    | 3x          | Balanced              | Most players             |
+| High (2)   | 6x          | Exciting              | High rollers             |
 
-All three risks are tuned to deliver **≈97% RTP**.
+All three risks are tuned to deliver **≈95% RTP**.
 
 ---
 

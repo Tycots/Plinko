@@ -116,34 +116,34 @@ class BettingContract(ARC4Contract):
 @subroutine
 def _get_low_risk(pos: UInt64) -> UInt64:
     if pos == UInt64(0):
-        return UInt64(108)
+        return UInt64(150)
     if pos == UInt64(1):
         return UInt64(102)
     if pos == UInt64(2):
-        return UInt64(98)
+        return UInt64(100)
     if pos == UInt64(3):
-        return UInt64(96)
+        return UInt64(98)
     if pos == UInt64(4):
-        return UInt64(94)
+        return UInt64(96)
     if pos == UInt64(5):
-        return UInt64(92)
+        return UInt64(94)
     if pos == UInt64(6):
-        return UInt64(90)
+        return UInt64(92)
     if pos == UInt64(7):
-        return UInt64(88)
+        return UInt64(90)
     return UInt64(88)
 
 
 @subroutine
 def _get_mid_risk(pos: UInt64) -> UInt64:
     if pos == UInt64(0):
-        return UInt64(255)
+        return UInt64(300)
     if pos == UInt64(1):
-        return UInt64(158)
+        return UInt64(150)
     if pos == UInt64(2):
-        return UInt64(105)
+        return UInt64(125)
     if pos == UInt64(3):
-        return UInt64(78)
+        return UInt64(80)
     if pos == UInt64(4):
         return UInt64(58)
     if pos == UInt64(5):
@@ -151,26 +151,26 @@ def _get_mid_risk(pos: UInt64) -> UInt64:
     if pos == UInt64(6):
         return UInt64(38)
     if pos == UInt64(7):
-        return UInt64(32)
-    return UInt64(28)
+        return UInt64(28)
+    return UInt64(25)
 
 
 @subroutine
 def _get_high_risk(pos: UInt64) -> UInt64:
     if pos == UInt64(0):
-        return UInt64(435)
+        return UInt64(600)
     if pos == UInt64(1):
-        return UInt64(245)
+        return UInt64(150)
     if pos == UInt64(2):
-        return UInt64(105)
+        return UInt64(42)
     if pos == UInt64(3):
-        return UInt64(55)
+        return UInt64(20)
     if pos == UInt64(4):
-        return UInt64(32)
+        return UInt64(10)
     if pos == UInt64(5):
-        return UInt64(18)
+        return UInt64(5)
     if pos == UInt64(6):
-        return UInt64(12)
+        return UInt64(3)
     if pos == UInt64(7):
-        return UInt64(8)
-    return UInt64(5)
+        return UInt64(2)
+    return UInt64(1)
